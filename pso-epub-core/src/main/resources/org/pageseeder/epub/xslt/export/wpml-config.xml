@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+
+  <!--
+    This stylesheet transform openXML into PS Format
+  
+    @author Hugo Inacio 
+    @copyright Allette Systems Pty Ltd 
+  -->
+  
+<config>
+  <default>
+    <document-split level="document|section|fragment|"
+  </default>
+  <block default="div">
+    <element    psml="heading"    psmlvalue="1" xhtml="h1"   xhtmlvalue=""/>
+    <element    psml="heading"    psmlvalue="2" xhtml="h2"   xhtmlvalue=""/>
+    <element    psml="heading"    psmlvalue="3" xhtml="h3"   xhtmlvalue=""/>
+    <element    psml="heading"    psmlvalue="4" xhtml="h4"   xhtmlvalue=""/>
+    <element    psml="heading"    psmlvalue="5" xhtml="h5"   xhtmlvalue=""/>
+    <element    psml="heading"    psmlvalue="6" xhtml="h6"   xhtmlvalue=""/>
+    <element    psml="para"       psmlvalue=""  xhtml="p"    xhtmlvalue=""/>
+  </block>
+  
+  <inline default="span">
+    <element    psml="bold"       psmlvalue=""        xhtml="b"      xhtmlvalue=""/>
+    <element    psml="italic"     psmlvalue=""        xhtml="i"      xhtmlvalue=""/>
+    <element    psml="sub"        psmlvalue=""        xhtml="sub"    xhtmlvalue=""/>
+    <element    psml="sup"        psmlvalue=""        xhtml="sup"    xhtmlvalue=""/>
+    <element    psml="underline"  psmlvalue=""        xhtml="u"      xhtmlvalue=""/>
+    <element    psml="inline"     psmlvalue="em"      xhtml="em"     xhtmlvalue=""/>
+    <element    psml="inline"     psmlvalue="cite"    xhtml="cite"   xhtmlvalue=""/>
+    <element    psml="inline"     psmlvalue="var"     xhtml="var"    xhtmlvalue=""/>
+    <element    psml="inline"     psmlvalue="samp"    xhtml="samp"   xhtmlvalue=""/>
+    <element    psml="inline"     psmlvalue="small"   xhtml="small"  xhtmlvalue=""/>
+    <element    psml="inline"     psmlvalue="strong"  xhtml="strong" xhtmlvalue=""/>
+    <element    psml="inline"     psmlvalue="mark"    xhtml="mark"   xhtmlvalue=""/>
+    <element    psml="inline"     psmlvalue="ins"     xhtml="ins"    xhtmlvalue=""/>
+    <element    psml="inline"     psmlvalue="del"     xhtml="del"    xhtmlvalue=""/>
+    <element    psml="inline"     psmlvalue="s"       xhtml="s"      xhtmlvalue=""/>
+    <element    psml="code"       psmlvalue=""        xhtml="code"   xhtmlvalue=""/>
+  </inline>
+  
+  <lists>
+    <element xhtml="ul" psml="list"   value=""/>
+    <element xhtml="ol" psml="nlist"  value=""/>
+    <element xhtml="li" psml="item"   value=""/>
+  </lists>
+  
+  <table>
+    <element xhtml="table"  psml="table"  value=""/>
+    <element xhtml="tr"     psml="row"    value=""/>
+    <element xhtml="td"     psml="cell"    value=""/>
+  </table>
+</config>

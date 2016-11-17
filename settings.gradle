@@ -1,0 +1,4 @@
+rootProject.name = 'pso-epub'
+
+include ':pso-epub-core'
+include ':pso-epub-ant' 

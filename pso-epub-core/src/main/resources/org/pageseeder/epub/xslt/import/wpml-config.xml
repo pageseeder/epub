@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+
+  <!--
+    This stylesheet transform openXML into PS Format
+  
+    @author Hugo Inacio 
+    @copyright Allette Systems Pty Ltd 
+  -->
+  
+<config>
+  <block>
+    <element xhtml="h1"   psml="heading"    value="1"/>
+    <element xhtml="h2"   psml="heading"    value="2"/>
+    <element xhtml="h3"   psml="heading"    value="3"/>
+    <element xhtml="h4"   psml="heading"    value="4"/>
+    <element xhtml="h5"   psml="heading"    value="5"/>
+    <element xhtml="h6"   psml="heading"    value="6"/>
+    <element xhtml="p"    psml="para"       value=""/>
+  </block>
+  
+  <inline>
+    <element xhtml="b"      psml="bold"       value=""/>
+    <element xhtml="i"      psml="italic"     value=""/>
+    <element xhtml="sub"    psml="sub"        value=""/>
+    <element xhtml="sup"    psml="sup"        value=""/>
+    <element xhtml="u"      psml="underline"  value=""/>
+    <element xhtml="em"     psml="inline"     value="em"/>
+    <element xhtml="cite"   psml="inline"     value="cite"/>
+    <element xhtml="var"    psml="inline"     value="var"/>
+    <element xhtml="samp"   psml="inline"     value="samp"/>
+    <element xhtml="small"  psml="inline"     value="small"/>
+    <element xhtml="strong" psml="inline"     value="strong"/>
+    <element xhtml="mark"   psml="inline"     value="mark"/>
+    <element xhtml="ins"    psml="inline"     value="ins"/>
+    <element xhtml="del"    psml="inline"     value="del"/>
+    <element xhtml="s"      psml="inline"     value="s"/>
+    <element xhtml="code"   psml="code"       value=""/>
+  </inline>
+  
+  <lists>
+    <element xhtml="ul" psml="list"   value=""/>
+    <element xhtml="ol" psml="nlist"  value=""/>
+    <element xhtml="li" psml="item"   value=""/>
+  </lists>
+  
+  <table>
+    <element xhtml="table"  psml="table"  value=""/>
+    <element xhtml="tr"     psml="row"    value=""/>
+  </table>
+</config>
