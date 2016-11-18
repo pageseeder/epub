@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Task definitions for this library.
+-->
+<antlib>
+  <taskdef name="import-epub"  classname="org.pageseeder.epub.ant.ImportTask"/>
+  <taskdef name="export-epub"  classname="org.pageseeder.epub.ant.ExportTask"/>
+</antlib>
