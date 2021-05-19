@@ -1,19 +1,12 @@
-plugins {
-  id "com.jfrog.bintray" version "1.7"
-}
-
 description = "Core EPUB API"
-
-apply plugin: 'maven-publish'
-apply from: "$rootDir/gradle/publishing.gradle"
 
 dependencies {
 
-  compile (
+  compileOnly (
     'net.sf.saxon:Saxon-HE:9.7.0-2'
   )
 
-  testCompile (
+  testImplementation (
     'junit:junit:4+'
   )
 

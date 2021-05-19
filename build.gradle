@@ -1,3 +1,9 @@
+plugins {
+  id 'java-library'
+  id 'maven-publish'
+  id 'io.codearte.nexus-staging' version '0.30.0'
+}
+
 group = 'org.pageseeder.epub'
 
 ext {
@@ -9,23 +15,15 @@ subprojects {
   version = "$globalVersion"
 
   apply plugin: 'java'
-  
+  apply from: "$rootDir/gradle/publish-mavencentral.gradle"
+
   sourceCompatibility = 1.8
   targetCompatibility = 1.8
 
   repositories {
-    maven { url 'http://dl.bintray.com/pageseeder/maven' }
-    jcenter()
-  }
-}
-
-task wrapper(type: Wrapper) {
-  gradleVersion = '3.1'
-  description 'Generates the Gradle wrapper scripts'
-}
-
-task publishAllToBintray {
-  subprojects.each {
-    dependsOn("${it.path}:bintrayUpload" )
+    mavenCentral {
+      url = uri("https://maven-central.storage.googleapis.com/maven2")
+    }
+    maven { url 'https://s01.oss.sonatype.org/content/groups/public/' }
   }
 }
