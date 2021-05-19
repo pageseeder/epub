@@ -1,22 +1,15 @@
-plugins {
-  id "com.jfrog.bintray" version "1.7"
-}
-
 description = "ANT tasks and definition for EPUB API"
-
-apply plugin: 'maven-publish'
-apply from: "$rootDir/gradle/publishing.gradle"
 
 dependencies {
 
   // DOCX module dependencies
-  compile project(':pso-epub-core')
+  compileOnly project(':pso-epub-core')
 
   compileOnly (
     'org.apache.ant:ant:1.8.1'
   )
 
-  testCompile (
+  testImplementation (
     'xmlunit:xmlunit:1.6',
     'junit:junit:4+'
   )
