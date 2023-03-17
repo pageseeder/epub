@@ -6,7 +6,7 @@ dependencies {
   compileOnly project(':pso-epub-core')
 
   compileOnly (
-    'org.apache.ant:ant:1.8.1'
+    'org.apache.ant:ant:1.10.13'
   )
 
   testImplementation (
