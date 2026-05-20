@@ -1,0 +1,32 @@
+[project]
+name = "epub"
+description = "EPUB import and export API"
+tags = ["java", "pageseeder", "epub", "psml", "ant"]
+authors = ["Jean-Baptiste Reure", "Philip Rutherford"]
+license = "Apache-2.0"
+inceptionYear = "2012"
+vendor = "Allette Systems"
+
+[project.links]
+homepage = "https://github.com/pageseeder/epub"
+documentation = "https://dev.pageseeder.com"
+license = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+
+[project.languages.java]
+groupId = "org.pageseeder"
+
+[release.github]
+owner = "pageseeder"
+name = "epub"
+username = "pageseeder"
+branch = "main"
+
+[signing]
+active = "ALWAYS"
+armored = true
+mode = "FILE"
+
+[deploy.maven.mavenCentral.sonatype]
+active = "ALWAYS"
+url = "https://central.sonatype.com/api/v1/publisher"
+stagingRepositories = ["build/staging-deploy"]
