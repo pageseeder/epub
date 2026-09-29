@@ -9,61 +9,75 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 
 /**
- * An ANT task to export a PageSeeder document to a Word document using the epub format.
+ * An ANT task to export PageSeeder processed PSML documents as an epub.
  *
- * @author Christophe Lauret
- * @version 18 February 2013
+ * @author Philip Rutherford
  */
 public final class ExportTask extends Task {
 
   /**
-   * The PageSeeder documents to export
+   * The PageSeeder PSML processed root document
    */
-  private File _source;
+  private File source;
 
   /**
-   * The Word document to generate.
+   * The destination file where the epub should be stored.
    */
-  private File _destination;
+  private File destination;
 
   /**
-   * The name of the working directory
+   * The working folder
    */
-  private File _working;
+  private File working;
 
   /**
-   * The configuration.
+   * The configuration file.
    */
-  private File _config;
+  private File config;
+
+  /**
+   * The CSS override file.
+   */
+  private File css;
+
+  /**
+   * The media folder.
+   */
+  private File media;
+
+  /**
+   * The components folder name
+   */
+  private String componentsName = "components";
 
   // Set properties
   // ----------------------------------------------------------------------------------------------
 
   /**
-   * Set the source file: a PageSeeder document to export as epub.
+   * Set the source PSML processed root document
    *
-   * @param source The master document for document to export.
+   * @param source The file
    */
   public void setSrc(File source) {
     if (!(source.exists())) {
-      throw new BuildException("the document " + source.getName()+ " doesn't exist");
+      throw new BuildException("the source " + source.getName()+ " doesn't exist");
     }
     if (source.isDirectory()) {
-      throw new BuildException("the document " + source.getName() + " can't be a directory");
+      throw new BuildException("the source " + source.getName() + " must be a file");
     }
-    this._source = source;
+    this.source = source;
   }
 
   /**
-   * Set the destination folder where PSML files should be stored.
+   * Set the destination file where the epub should be stored.
    *
-   * @param destination Where to store the PSML files.
+   * @param destination The file
    */
   public void setDest(File destination) {
     if (destination.exists() && destination.isDirectory()) {
-      throw new BuildException("if document epub exists, it must be a file");
+      throw new BuildException("if destination epub exists, it must be a file");
     }
-    this._destination = destination;
+    this.destination = destination;
   }
 
   /**
@@ -75,7 +89,7 @@ public final class ExportTask extends Task {
     if (working.exists() && !working.isDirectory()) {
       throw new BuildException("if working folder exists, it must be a directory");
     }
-    this._working = working;
+    this.working = working;
   }
 
   /**
@@ -87,7 +101,37 @@ public final class ExportTask extends Task {
     if (!config.exists() || config.isDirectory()) {
       throw new BuildException("your configuration file must exist and be a file");
     }
-    this._config = config;
+    this.config = config;
+  }
+
+  /**
+   * Set the CSS override file (optional).
+   *
+   * @param css The CSS file.
+   */
+  public void setCSS(File css) {
+    if (!css.exists() || css.isDirectory()) {
+      throw new BuildException("your css file must exist and be a file");
+    }
+    this.css = css;
+  }
+
+  /**
+   * Set the media folder (optional).
+   * @param media The media folder.
+   */
+  public void setMedia(File media) {
+    if (!media.exists() || !media.isDirectory()) {
+      throw new BuildException("your media folder must exist and be a directory"); }
+    this.media = media;
+  }
+
+  /**
+   * Set the components folder name (optional).
+   * @param componentsName The components folder name.
+   */
+  public void setComponentsName(String componentsName) {
+    this.componentsName = componentsName;
   }
 
   // Execute
@@ -95,45 +139,22 @@ public final class ExportTask extends Task {
 
   @Override
   public void execute() throws BuildException {
-    if (this._source == null)
-      throw new BuildException("Source presentation must be specified using 'src' attribute");
+    if (this.source == null)
+      throw new BuildException("Source must be specified using 'src' attribute");
+    if (this.destination == null)
+      throw new BuildException("Destination must be specified using 'dest' attribute");
+
     // Defaulting working directory
-    if (this._working == null) {
+    if (this.working == null) {
       String tmp = "antepub-"+System.currentTimeMillis();
-      this._working = new File(System.getProperty("java.io.tmpdir"), tmp);
+      this.working = new File(System.getProperty("java.io.tmpdir"), tmp);
     }
-    if (!this._working.exists()) {
-      this._working.mkdirs();
-    }
-
-    // The name of the presentation
-    String name = this._source.getName();
-    if (name.endsWith(".xml")) name = name.substring(0, name.length() - 4);
-
-    // Defaulting destination directory
-    if (this._destination == null) {
-      this._destination = new File(this._source.getParentFile(), ".pptx");
-      log("Destination set to "+this._destination.getName());
+    if (!this.working.exists()) {
+      this.working.mkdirs();
     }
 
-    // Defaulting config file
-    if (this._config == null) {
-      this._config = null; // TODO
-      log("Using default epub configuration for import");
-    }
+    // TODO Add export code
 
-    // Where we are going to assemble the pptx
-    File prepacked = new File(this._working, "prepacked");
-
-    // TODO
-
-    log("=============================================================================");
-    log("SORRY, but this has yet to be implemented!!!");
-    log("=============================================================================");
   }
-
-  // Helpers
-  // ----------------------------------------------------------------------------------------------
-
 
 }
