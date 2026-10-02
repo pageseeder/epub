@@ -1,0 +1,47 @@
+<config>
+
+  <!-- Each dc or meta element is optional and can have a @value and/or @property
+       with @property overriding @value with the value from the PSML property/@value of that name.
+       If @multiple='true' then values are taken from the PSML property/value.
+       The dc/@name only supports the names listed but meta/@name can be anything. -->
+  <metadata>
+    <dc name="isbn" property="epub-config-isbn"/>
+    <dc name="title" property="epub-config-title"/>
+    <dc name="creator" property="epub-config-creator" multiple="true"/>
+    <dc name="language" property="epub-config-language"/>
+    <dc name="date" property="epub-config-date"/>
+    <dc name="publisher" value="Example Press" />
+    <dc name="subject" value="General" property="subject" />
+    <dc name="rights" property="epub-config-rights" />
+    <meta name="dcterms:conformsTo" value="EPUB Accessibility 1.1 - WCAG 2.1 Level AA" />
+    <meta name="schema:accessMode" property="epub-config-access-mode" multiple="true" />
+    <meta name="schema:accessModeSufficient" property="epub-config-access-mode-sufficient" multiple="true" />
+    <meta name="schema:accessibilityFeature" property="epub-config-accessibility-feature" multiple="true" />
+    <meta name="schema:accessibilityHazard" property="epub-config-accessibility-hazard" multiple="true" />
+    <meta name="schema:accessibilityControl" property="epub-config-accessibility-control" multiple="true" />
+    <meta name="schema:accessibilityAPI" property="epub-config-accessibility-api" multiple="true" />
+    <meta name="schema:accessibilitySummary" property="epub-config-accessibility-summary" />
+    <meta name="a11y:certifiedBy" property="epub-config-certified-by" />
+    <meta name="a11y:certifierCredential" property="epub-config-certifier-credential" />
+    <meta name="a11y:certifierReport" property="epub-config-certifier-report" />
+  </metadata>
+
+  <!-- The PSML xref/@documenttype for endnotes and footnotes -->
+  <endnotes documenttype="endnotes" />
+  <footnotes documenttype="footnotes" />
+
+  <!-- The PSML xref/@documenttype for terms and xref-fragment/@type for definitions -->
+  <glossary documenttype="glossary" fragmenttype="definitions" />
+
+  <!-- The PSML xref/@documenttype for citations and properties for bibliography items -->
+  <bibliography documenttype="bibliography"
+                linkproperty="link-text"
+                itemproperty="description"/>
+
+  <!-- Don't output to the ePub PSML fragment or property-fragment with these labels or types-->
+  <fragment>
+    <hide label="print" />
+    <hide type="epub-config" />
+    <hide type="epub-a11y" />
+  </fragment>
+</config>

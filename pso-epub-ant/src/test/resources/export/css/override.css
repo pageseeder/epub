@@ -1,0 +1,9 @@
+/* CSS override used by ExportTaskTest */
+body {
+  font-family: Georgia, serif;
+  line-height: 1.5;
+}
+
+aside[epub|type~="footnote"] {
+  display: none;
+}

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document id="167024" schemaversion="1.4" type="asciimath" date="2026-09-09T15:02:39+10:00" version="current" level="processed" position="1" publicationid="ebl1-syst-port-3u4v"><documentinfo><uri id="167024" external="false" mediatype="application/vnd.pageseeder.psml+xml" documenttype="asciimath" created="2026-09-09T15:02:39+10:00" modified="2026-09-09T15:02:39+10:00" scheme="http" host="pr.localhost" port="80" path="/ps/epub/local1/documents/asciimath/asciimath-004.psml" decodedpath="/ps/epub/local1/documents/asciimath/asciimath-004.psml" title="Exponential 4"><displaytitle>Exponential 4</displaytitle><labels>complex,exponential</labels></uri></documentinfo><fragmentinfo structure-modified="2019-09-10T11:43:43+10:00"><locator id="245889" fragment="167024-1" modified="2019-09-10T12:18:39+10:00"><reversexrefs><reversexref uriid="166976" href="../../../components/system_report-10.psml" frag="8" urititle="Functionality" mediatype="application/vnd.pageseeder.psml+xml" id="719552" title="" config="asciimath" type="none" forwardtype="math" forwarddisplay="document" forwardfrag="1"></reversexref></reversexrefs></locator></fragmentinfo><metadata></metadata><section id="167024-media"><media-fragment id="167024-1" mediatype="application/mathml+xml"><math xmlns="http://www.w3.org/1998/Math/MathML">
+  <mstyle displaystyle="true">
+    <mi>y</mi>
+    <mo>=</mo>
+    <msup>
+      <mi>x</mi>
+      <mn>2</mn>
+    </msup>
+    <mo>+</mo>
+    <mi>z</mi>
+  </mstyle>
+</math>
+</media-fragment></section></document>

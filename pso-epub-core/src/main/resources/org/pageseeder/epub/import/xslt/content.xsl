@@ -420,7 +420,7 @@ Any existing anchors will be seperate sections as well, for reference of any hre
 				<xsl:attribute name="height" select="@height" />
 			</xsl:if>
 			<xsl:attribute name="src">
-        <xsl:value-of select="concat('../media/',@src)" />
+        <xsl:value-of select="concat('../media/',tokenize(@src,'/')[last()])" />
       </xsl:attribute>
 		</image>
 	</xsl:template>
@@ -437,7 +437,7 @@ Any existing anchors will be seperate sections as well, for reference of any hre
               <xsl:attribute name="height" select="@height" />
             </xsl:if>
             <xsl:attribute name="src">
-              <xsl:value-of select="concat('../media/',@src)" />
+              <xsl:value-of select="concat('../media/',tokenize(@src,'/')[last()])" />
             </xsl:attribute>
           </image>
         </inline>
@@ -452,7 +452,7 @@ Any existing anchors will be seperate sections as well, for reference of any hre
 		          <xsl:attribute name="height" select="@height" />
 		        </xsl:if>
 		        <xsl:attribute name="src">
-		          <xsl:value-of select="concat('../media/',@src)" />
+		          <xsl:value-of select="concat('../media/',tokenize(@src,'/')[last()])" />
 		        </xsl:attribute>
 		      </image>
         </block>
@@ -489,7 +489,7 @@ Any existing anchors will be seperate sections as well, for reference of any hre
 		<xsl:message><xsl:value-of select="$simple-href" /></xsl:message>
 		<xref display="manual"
 			type="none" reverselink="true" reversetitle=""
-			reversetype="none" href="{$file-names//file[@original = $simple-href]/@new}">
+			reversetype="none" href="{$file-names//file[@uri = resolve-uri(string($simple-href), base-uri(current()))]/@new}">
 			<xsl:attribute name="title">
 			 <xsl:choose>
 			   <xsl:when test="@title">

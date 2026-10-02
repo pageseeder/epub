@@ -1,0 +1,291 @@
+/*
+ * ePub stylesheet for df_sec publications.
+ * Maps PSML labels, roles and fragment types to semantic CSS classes.
+ *
+ * Design principles:
+ *   - Reader defaults are respected (no body colour or font-family overrides)
+ *   - Relative units throughout (em, rem, %)
+ *   - Content-first, decoration-minimal
+ *   - Block labels become <section class="{label}">
+ *   - Inline labels become <span class="{label}">
+ *   - Table/list roles become class="role-{role}"
+ *   - Fragment types become data-fragment-type="{type}"
+ */
+
+/* ----- Base reset (minimal, respect reader settings) ----- */
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  line-height: 1.5;
+}
+
+/* ----- Headings ----- */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: bold;
+  page-break-after: avoid;
+  break-after: avoid;
+}
+
+h1 { font-size: 1.6em; margin: 1em 0 0.5em; }
+h2 { font-size: 1.4em; margin: 1.2em 0 0.5em; }
+h3 { font-size: 1.2em; margin: 1em 0 0.4em; }
+h4 { font-size: 1.05em; margin: 1em 0 0.4em; }
+h5, h6 { font-size: 1em; margin: 1em 0 0.3em; }
+
+/* ----- Paragraphs ----- */
+p {
+  margin: 0 0 0.8em;
+  text-indent: 0;
+}
+
+p + p {
+  margin-top: 0;
+}
+
+/* ----- Lists ----- */
+ul, ol {
+  margin: 0.5em 0 0.8em;
+  padding-left: 1.5em;
+}
+
+li {
+  margin-bottom: 0.3em;
+}
+
+/* ----- Images & figures ----- */
+figure {
+  margin: 1em 0;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+figure img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+figcaption {
+  font-size: 0.9em;
+  font-style: italic;
+  text-align: center;
+  margin-top: 0.5em;
+}
+
+/* ----- Tables ----- */
+table {
+  border-collapse: collapse;
+  margin: 1em 0;
+  width: 100%;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+th, td {
+  border: 1px solid #999;
+  padding: 0.4em 0.6em;
+  text-align: left;
+  vertical-align: top;
+  /* Break long tokens (long section refs, URLs) instead of overflowing the
+     cell, which is what causes column overlap. */
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+/* Wide comparison tables (>=6 cols, tagged "wide" by psml-to-xhtml.xsl).
+   Cramming 10 columns into a reflow page overlaps; instead let the table take
+   a readable min-width and give it a horizontal scroll container. table-layout
+   fixed makes the <col> percentage widths authoritative so cells stop blowing
+   out. Narrow tables are untouched (keep auto layout, fit the page). */
+.table-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+table.wide {
+  table-layout: fixed;
+  min-width: 44em;
+  font-size: 0.72em;
+}
+table.wide th,
+table.wide td {
+  padding: 0.25em 0.4em;
+}
+
+th {
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+/* ========================================================================
+   PSML BLOCK LABELS → semantic sections
+   ======================================================================== */
+
+/* hide footnotes and popup copies of glossary definitions/citations in Thorium */
+section.footnotes,
+aside[role="doc-footnote"],
+section.popup-notes {
+  display: none;
+}
+
+/* Content blocks */
+section.foundation {
+  padding: 0.5em 0;
+}
+
+section.para {
+  padding-left: 1.5em;
+}
+
+/* Glossary definition block */
+section.gloss-def {
+  margin: 0.5em 0;
+  padding-left: 1em;
+  border-left: 2px solid #ccc;
+}
+
+/* ========================================================================
+   PSML INLINE LABELS → span classes
+   ======================================================================== */
+
+span.glossary {
+  border-bottom: 1px dotted #2c5aa0;
+  cursor: help;
+}
+
+span.highlight {
+  background-color: #fffbcc;
+}
+
+span.gloss-def-term {
+  font-weight: bold;
+}
+
+/* Math content containers */
+span.asciimath,
+span.tex {
+  font-family: serif;
+}
+
+/* ========================================================================
+   MathML display
+   ======================================================================== */
+
+math {
+  font-size: 1em;
+}
+
+math[display="block"] {
+  display: block;
+  text-align: center;
+  margin: 0.8em 0;
+}
+
+/* ========================================================================
+   External resource links (assets that point to S3 etc)
+   ======================================================================== */
+
+a.external-resource {
+  display: inline-block;
+  padding: 0.3em 0.6em;
+  margin: 0.2em 0;
+  border: 1px solid #2c5aa0;
+  border-radius: 3px;
+  text-decoration: none;
+  color: #2c5aa0;
+  font-size: 0.95em;
+}
+
+a.external-resource::before {
+  content: "↗ ";
+  font-weight: bold;
+}
+
+/* ========================================================================
+   Cross-references
+   ======================================================================== */
+
+a.xref {
+  text-decoration: none;
+  color: inherit;
+  border-bottom: 1px dotted currentColor;
+}
+
+/* ========================================================================
+   Glossary page
+   ======================================================================== */
+
+dl.glossary {
+  margin: 1em 0;
+}
+
+dl.glossary dt {
+  font-weight: bold;
+  margin-top: 0.8em;
+}
+
+dl.glossary dd {
+  margin: 0.2em 0 0 1.5em;
+}
+
+dl.glossary dt dfn {
+  font-style: normal;
+}
+/* Glossary term references (popups in supporting readers) */
+a.glossref {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dotted currentColor;
+  cursor: help;
+}
+
+/* ========================================================================
+   Bibliography page
+   ======================================================================== */
+
+ol.bibliography {
+  list-style: none;
+  padding-left: 0;
+}
+
+ol.bibliography li {
+  margin: 0.5em 0 0.5em 1.5em;
+  text-indent: -1.5em;
+}
+
+ol.bibliography li p {
+  margin: 0;
+}
+
+/* Citations (popups in supporting readers) */
+a.biblioref {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dotted currentColor;
+}
+
+/* ========================================================================
+   Navigation (nav.xhtml) — suppressed per ePub 3 spec when viewed as content
+   ======================================================================== */
+
+nav[hidden] {
+  display: none;
+}
+
+nav ol {
+  list-style: none;
+  padding-left: 1em;
+}
+
+nav ol ol {
+  padding-left: 1.5em;
+}
+
+nav a {
+  text-decoration: none;
+}

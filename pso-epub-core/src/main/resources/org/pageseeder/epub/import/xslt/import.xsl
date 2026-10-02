@@ -11,7 +11,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xhtml="http://www.w3.org/1999/xhtml"
 	xmlns:fn="http://www.pageseeder.com/function" exclude-result-prefixes="#all">
 
-	<xsl:include href="import/content.xsl" />
+	<xsl:include href="content.xsl" />
 
 <!-- Root folder -->
 	<xsl:param name="_rootfolder" />
@@ -22,7 +22,7 @@
 <!-- epub file name [file_name].epub -->
 	<xsl:param name="_epubfilename" />
   
-  <xsl:variable name="configDoc" select="document('import/wpml-config.xml')" />
+  <xsl:variable name="configDoc" select="document('../wpml-config.xml')" />
 <!-- CONTAINER.XML ============================================================================ -->
 
 <!--
@@ -72,31 +72,10 @@ Each of these files will be used to generate psml files and reference them insid
 					select="replace(substring-before($_epubfilename,'.epub'),'[^a-zA-Z0-9_-]','_')" />
 			</xsl:variable>
       
-      <!-- This variable is used to map the file names (from the referenced files by each itemref to the generated files) -->
-			<xsl:variable name="file-names" as="element()">
-				<files>
-					<xsl:for-each select="opf:itemref">
-						<xsl:variable name="idref">
-							<xsl:value-of select="@idref" />
-						</xsl:variable>
-						<file>
-							<xsl:attribute name="original">
-                <xsl:value-of
-								select="../../opf:manifest/opf:item[@id=$idref]/@href" />
-              </xsl:attribute>
-							<xsl:attribute name="new">
-                <xsl:value-of
-								select="concat($base-folder,'-',position(),'.xml')" />
-              </xsl:attribute>
-						</file>
-					</xsl:for-each>
-				</files>
-			</xsl:variable>
-      
       <xsl:variable name="number-of-files">
         <xsl:value-of select="count(opf:itemref)"/>
       </xsl:variable>
-      
+
        <xsl:variable name="zeropadding">
       <xsl:choose>
         <xsl:when test="$number-of-files &lt; 10">
@@ -113,10 +92,32 @@ Each of these files will be used to generate psml files and reference them insid
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    
+
+      <!-- This variable is used to map the file names (from the referenced files by each itemref to the generated files) -->
+			<xsl:variable name="file-names" as="element()">
+				<files>
+					<xsl:for-each select="opf:itemref">
+						<xsl:variable name="idref">
+							<xsl:value-of select="@idref" />
+						</xsl:variable>
+						<file>
+							<xsl:attribute name="original">
+                <xsl:value-of
+								select="../../opf:manifest/opf:item[@id=$idref]/@href" />
+              </xsl:attribute>
+							<xsl:attribute name="new">
+                <xsl:value-of
+								select="concat($base-folder,'-',format-number(position(), $zeropadding),'.psml')" />
+              </xsl:attribute>
+							<xsl:attribute name="uri"
+								select="resolve-uri(../../opf:manifest/opf:item[@id=$idref]/@href, base-uri(.))" />
+						</file>
+					</xsl:for-each>
+				</files>
+			</xsl:variable>
+
 			<section id="content">
 				<fragment format="psxreflist" id="content">
-					<xsl:value-of select="$file-names" />
 					<xsl:for-each select="opf:itemref">
 
 						<xsl:variable name="file-name">
@@ -149,7 +150,7 @@ Each of these files will be used to generate psml files and reference them insid
 							frag="default" display="manual" type="embed"
 							reverselink="true" reversetitle="" reversetype="none"
 							href="{concat($base-folder,'/',encode-for-uri($file-name))}">
-							<xsl:value-of select="substring-before($file-name,'.xml')" />
+							<xsl:value-of select="substring-before($file-name,'.psml')" />
 						</blockxref>
 					</xsl:for-each>
 

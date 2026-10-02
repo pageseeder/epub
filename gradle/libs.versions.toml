@@ -1,0 +1,19 @@
+[versions]
+ant = "1.10.13"
+epubcheck = "5.4.0"
+jreleaser = "1.18.0"
+junit = "5.11.0"
+saxon = "12.9"
+xmlunit = "1.6"
+
+[libraries]
+ant = { module = "org.apache.ant:ant", version.ref = "ant" }
+epubcheck = { module = "org.w3c:epubcheck", version.ref = "epubcheck" }
+junit = { module = "org.junit:junit-bom", version.ref = "junit" }
+saxon = { module = "net.sf.saxon:Saxon-HE", version.ref = "saxon" }
+xmlunit = { module = "xmlunit:xmlunit", version.ref = "xmlunit" }
+
+[plugins]
+jreleaser = { id = "org.jreleaser", version.ref = "jreleaser" }
+sonar = { id = "org.sonarqube", version = "7.1.0.6387" }
+versions = { id = "com.github.ben-manes.versions", version = "0.52.0" }
