@@ -7,6 +7,8 @@ import java.io.File;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.pageseeder.epub.EPubException;
+import org.pageseeder.epub.PSMLProcessor;
 
 /**
  * An ANT task to export PageSeeder processed PSML documents as an epub.
@@ -153,8 +155,20 @@ public final class ExportTask extends Task {
       this.working.mkdirs();
     }
 
-    // TODO Add export code
-
+    PSMLProcessor processor = new PSMLProcessor();
+    processor.setSource(this.source);
+    processor.setDestination(this.destination);
+    processor.setWorking(this.working);
+    processor.setConfig(this.config);
+    processor.setCSS(this.css);
+    processor.setMedia(this.media);
+    processor.setComponentsName(this.componentsName);
+    processor.setLogger(this::log);
+    try {
+      processor.process();
+    } catch (EPubException ex) {
+      throw new BuildException(ex.getMessage(), ex);
+    }
   }
 
 }

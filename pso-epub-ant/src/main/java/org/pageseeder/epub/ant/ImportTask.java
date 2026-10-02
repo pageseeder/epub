@@ -180,7 +180,7 @@ public final class ImportTask extends Task {
     File container = new File(preprocessed, "META-INF/container.xml");
 
     // Parse templates
-    Templates templates = XSLT.getTemplatesFromResource("com/pageseeder/ant/epub/xslt/import.xsl");
+    Templates templates = XSLT.getTemplatesFromResource("org/pageseeder/epub/import/xslt/import.xsl");
     String outuri = folder.toURI().toString();
 
     // Initiate parameters

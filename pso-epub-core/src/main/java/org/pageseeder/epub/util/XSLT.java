@@ -23,7 +23,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.URIResolver;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
@@ -134,8 +133,6 @@ public final class XSLT {
     try {
       // Create a transformer from the templates
       Transformer transformer = templates.newTransformer();
-      URIResolver resolver = transformer.getURIResolver();
-      transformer.setURIResolver(new LocalResolver(resolver));
 
       // Transmit the properties to the transformer
       if (parameters != null) {

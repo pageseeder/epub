@@ -100,7 +100,7 @@ public class XMLCopy extends DefaultHandler implements ContentHandler, LexicalHa
     if (publicId.startsWith("-//W3C//")) {
       try {
         ClassLoader loader = XMLCopy.class.getClassLoader();
-        URL url = loader.getResource("com/pageseeder/ant/epub/ent/xhtml.ent");
+        URL url = loader.getResource("org/pageseeder/epub/ent/xhtml.ent");
         return new InputSource(url.openStream());
       } catch (Exception ex) {
         ex.printStackTrace();

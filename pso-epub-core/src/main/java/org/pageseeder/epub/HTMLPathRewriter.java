@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Map;
 
+import org.pageseeder.epub.util.Files;
 import org.pageseeder.epub.util.Paths;
 import org.pageseeder.epub.util.XML;
 import org.pageseeder.epub.util.XMLCopy;
@@ -106,6 +107,7 @@ public final class HTMLPathRewriter extends XMLCopy {
   public static void rewrite(File from, File to, String path, Map<String, String> map) {
     HTMLPathRewriter rewriter = null;
     try {
+      Files.ensureDirectoryExists(new File(to, path).getParentFile());
       rewriter = new HTMLPathRewriter(to, path, map);
       File html = new File(from, path);
       XMLReader xmlreader = XML.newXMLReader(rewriter);
