@@ -1,0 +1,78 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="config">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="metadata" type="metadataType" minOccurs="0"/>
+        <xs:element name="endnotes" type="documentTypeConfig" minOccurs="0"/>
+        <xs:element name="footnotes" type="documentTypeConfig" minOccurs="0"/>
+        <xs:element name="glossary" type="glossaryType" minOccurs="0"/>
+        <xs:element name="bibliography" type="bibliographyType" minOccurs="0"/>
+        <xs:element name="fragment" type="fragmentType" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="metadataType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="dc" type="dcMetadataType"/>
+        <xs:element name="meta" type="metaMetadataType"/>
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="dcMetadataType">
+    <xs:attribute name="name" use="required">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="isbn"/>
+          <xs:enumeration value="title"/>
+          <xs:enumeration value="creator"/>
+          <xs:enumeration value="language"/>
+          <xs:enumeration value="date"/>
+          <xs:enumeration value="publisher"/>
+          <xs:enumeration value="subject"/>
+          <xs:enumeration value="rights"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="value" type="xs:string"/>
+    <xs:attribute name="property" type="xs:string"/>
+    <xs:attribute name="multiple" type="xs:boolean"/>
+  </xs:complexType>
+
+  <xs:complexType name="metaMetadataType">
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="value" type="xs:string"/>
+    <xs:attribute name="property" type="xs:string"/>
+    <xs:attribute name="multiple" type="xs:boolean"/>
+  </xs:complexType>
+
+  <xs:complexType name="documentTypeConfig">
+    <xs:attribute name="documenttype" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="glossaryType">
+    <xs:attribute name="documenttype" type="xs:string" use="required"/>
+    <xs:attribute name="fragmenttype" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="bibliographyType">
+    <xs:attribute name="documenttype" type="xs:string" use="required"/>
+    <xs:attribute name="linkproperty" type="xs:string"/>
+    <xs:attribute name="itemproperty" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="fragmentType">
+    <xs:sequence>
+      <xs:element name="hide" type="hideType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="hideType">
+    <xs:attribute name="label" type="xs:string"/>
+    <xs:attribute name="type" type="xs:string"/>
+  </xs:complexType>
+
+</xs:schema>

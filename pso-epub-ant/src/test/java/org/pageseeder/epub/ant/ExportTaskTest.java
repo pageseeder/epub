@@ -1,10 +1,5 @@
 package org.pageseeder.epub.ant;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -31,10 +26,18 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.io.TempDir;
 
+import javax.xml.XMLConstants;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * Tests for the export-epub task.
  */
-public class ExportTaskTest {
+class ExportTaskTest {
 
   /** Entries not compared with the expected EPUB. */
   private static final Set<String> IGNORE = Set.of("OEBPS/styles/epub.css");
@@ -50,7 +53,7 @@ public class ExportTaskTest {
    * 'epub.test.output' system property, named after the test, e.g. testExportWithFullConfig.epub
    */
   @AfterEach
-  public void keepOutput(TestInfo info) throws Exception {
+  void keepOutput(TestInfo info) throws Exception {
     String folder = System.getProperty("epub.test.output");
     File epub = this.tmp.resolve("out.epub").toFile();
     String name = info.getTestMethod().map(Method::getName).orElse("unknown");
@@ -61,7 +64,7 @@ public class ExportTaskTest {
   }
 
   @Test
-  public void testExportMatchesExpected() throws Exception {
+  void testExportMatchesExpected() throws Exception {
     File epub = export("export-baseline.xml");
     EpubAssert.assertSameEpub(resource(BASELINE), epub, IGNORE);
     EpubXml.load(epub).assertLinksResolve();
@@ -74,9 +77,11 @@ public class ExportTaskTest {
   }
 
   @Test
-  public void testCssOverride() throws Exception {
+  void testCssOverride() throws Exception {
     ExportTask task = newTask(resource("process/system_report.psml"));
-    task.setConfig(resource("config/export-baseline.xml"));
+    File config = resource("config/export-baseline.xml");
+    assertValidConfig(config);
+    task.setConfig(config);
     task.setCSS(resource("css/override.css"));
     task.execute();
     File epub = this.tmp.resolve("out.epub").toFile();
@@ -87,7 +92,7 @@ public class ExportTaskTest {
   }
 
   @Test
-  public void testComponentsNameOverride() throws Exception {
+  void testComponentsNameOverride() throws Exception {
     // Copy the PSML renaming the components folder
     Path process = this.tmp.resolve("process");
     Path source = resource("process").toPath();
@@ -108,14 +113,16 @@ public class ExportTaskTest {
 
     // Default components name: the components referenced in the TOC are not found
     ExportTask defaultTask = newTask(root.toFile());
-    defaultTask.setConfig(resource("config/export-baseline.xml"));
+    File config = resource("config/export-baseline.xml");
+    assertValidConfig(config);
+    defaultTask.setConfig(config);
     defaultTask.setWorking(this.tmp.resolve("work-default").toFile());
     defaultTask.setDest(this.tmp.resolve("default.epub").toFile());
     assertThrows(BuildException.class, defaultTask::execute);
 
     // Overridden components name
     ExportTask task = newTask(root.toFile());
-    task.setConfig(resource("config/export-baseline.xml"));
+    task.setConfig(config);
     task.setComponentsName("chapters");
     task.execute();
     File epub = this.tmp.resolve("out.epub").toFile();
@@ -124,7 +131,7 @@ public class ExportTaskTest {
   }
 
   @Test
-  public void testValidatorRejectsInvalidEpub() throws Exception {
+  void testValidatorRejectsInvalidEpub() throws Exception {
     // Make sure epubcheck actually detects problems: remove a content file listed in the manifest
     File epub = export("export-baseline.xml");
     File broken = this.tmp.resolve("broken.epub").toFile();
@@ -150,7 +157,7 @@ public class ExportTaskTest {
   }
 
   @Test
-  public void testExportWithEmptyConfig() throws Exception {
+  void testExportWithEmptyConfig() throws Exception {
     File epub = export(null);
     EpubXml xml = EpubXml.load(epub);
 
@@ -190,7 +197,7 @@ public class ExportTaskTest {
   }
 
   @Test
-  public void testExportWithGlossary() throws Exception {
+  void testExportWithGlossary() throws Exception {
     File epub = export("export-glossary.xml");
     EpubXml xml = EpubXml.load(epub);
 
@@ -237,7 +244,7 @@ public class ExportTaskTest {
   }
 
   @Test
-  public void testExportWithBibliography() throws Exception {
+  void testExportWithBibliography() throws Exception {
     File epub = export("export-bibliography.xml");
     EpubXml xml = EpubXml.load(epub);
     assertBibliography(xml);
@@ -255,7 +262,7 @@ public class ExportTaskTest {
   }
 
   @Test
-  public void testExportWithFullConfig() throws Exception {
+  void testExportWithFullConfig() throws Exception {
     File epub = export("export-full.xml");
     EpubXml xml = EpubXml.load(epub);
     assertBibliography(xml);
@@ -350,13 +357,31 @@ public class ExportTaskTest {
    *
    * @param config The config file name in the export/config test resources (may be null)
    */
-  private File export(String config) throws URISyntaxException {
+  private File export(String config) throws Exception {
     ExportTask task = newTask(resource("process/system_report.psml"));
+    if (config != null) {
+      File configFile = resource("config/"+config);
+      assertValidConfig(configFile);
+      task.setConfig(configFile);
+    }
     if (config != null) task.setConfig(resource("config/"+config));
     task.execute();
     return this.tmp.resolve("out.epub").toFile();
   }
 
+  /**
+   * Validates an export config file against the bundled export config XSD.
+   */
+  private static void assertValidConfig(File config) throws Exception {
+    URL schemaUrl = ExportTaskTest.class.getResource("/org/pageseeder/epub/export/epub-export-config.xsd");
+    assertNotNull(schemaUrl, "Missing EPUB export config schema");
+
+    SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+    Schema schema = factory.newSchema(schemaUrl);
+    Validator validator = schema.newValidator();
+    validator.validate(new StreamSource(config));
+  }
+  
   private ExportTask newTask(File source) throws URISyntaxException {
     ExportTask task = new ExportTask();
     task.setProject(new Project());
