@@ -81,7 +81,7 @@
                       select="if (exists($bibliography-type)) then //xref[@documenttype = $bibliography-type] else ()"/>
         <xsl:if test="exists($terms) or exists($citations)">
           <section class="popup-notes">
-            <xsl:for-each-group select="$terms" group-by="@uriid">
+            <xsl:for-each-group select="$terms" group-by="concat(@uriid,'-',@frag)">
               <xsl:apply-templates select="." mode="glossary-note"/>
             </xsl:for-each-group>
             <xsl:for-each-group select="$citations" group-by="concat(@uriid,'-',@frag)">
@@ -106,34 +106,56 @@
        SECTIONS: group content inside the article
        ===================================================================== -->
   <xsl:template match="section">
+    <xsl:variable name="glossary-fragments" select="fragment[psf:is-glossary(.)]" />
     <section>
-      <xsl:if test="xref-fragment[psf:is-glossary(.)]">
-        <xsl:attribute name="epub:type">glossary</xsl:attribute>
-        <xsl:attribute name="role">doc-glossary</xsl:attribute>
-      </xsl:if>
-      <xsl:if test="properties-fragment[psf:is-biblioentry(.)]">
-        <xsl:attribute name="epub:type">bibliography</xsl:attribute>
-        <xsl:attribute name="role">doc-bibliography</xsl:attribute>
-      </xsl:if>
+      <xsl:choose>
+        <xsl:when test="xref-fragment[psf:is-glossary(.)] or $glossary-fragments">
+          <xsl:attribute name="epub:type">glossary</xsl:attribute>
+          <xsl:attribute name="role">doc-glossary</xsl:attribute>
+        </xsl:when>
+        <xsl:when test="properties-fragment[psf:is-biblioentry(.)]">
+          <xsl:attribute name="epub:type">bibliography</xsl:attribute>
+          <xsl:attribute name="role">doc-bibliography</xsl:attribute>
+        </xsl:when>
+      </xsl:choose>
       <xsl:if test="@title">
         <xsl:attribute name="aria-label" select="@title"/>
       </xsl:if>
       <xsl:if test="@fragmenttype">
         <xsl:attribute name="data-fragmenttype" select="@fragmenttype"/>
       </xsl:if>
-      <!-- Consecutive bibliography entries are grouped in a list -->
-      <xsl:for-each-group select="*" group-adjacent="psf:is-biblioentry(.)">
-        <xsl:choose>
-          <xsl:when test="current-grouping-key()">
-            <ol class="bibliography" role="list">
-              <xsl:apply-templates select="current-group()" mode="bibliography"/>
-            </ol>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:apply-templates select="current-group()"/>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:for-each-group>
+      <xsl:choose>
+        <xsl:when test="$glossary-fragments">
+          <!-- Consecutive glossary entries are grouped in a definition list -->
+          <xsl:for-each-group select="*" group-adjacent="psf:is-glossary(.)">
+            <xsl:choose>
+              <xsl:when test="current-grouping-key()">
+                <dl class="glossary">
+                  <xsl:apply-templates select="current-group()" mode="glossary"/>
+                </dl>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:apply-templates select="current-group()"/>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:for-each-group>
+        </xsl:when>
+        <xsl:otherwise>
+          <!-- Consecutive bibliography entries are grouped in a list -->
+          <xsl:for-each-group select="*" group-adjacent="psf:is-biblioentry(.)">
+            <xsl:choose>
+              <xsl:when test="current-grouping-key()">
+                <ol class="bibliography" role="list">
+                  <xsl:apply-templates select="current-group()" mode="bibliography"/>
+                </ol>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:apply-templates select="current-group()"/>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:for-each-group>
+        </xsl:otherwise>
+     </xsl:choose>
     </section>
   </xsl:template>
 
@@ -668,15 +690,25 @@
     </dl>
   </xsl:template>
 
-  <!-- One term and its definition per definition document -->
+  <!-- Generated model: One term and its definition per definition document -->
   <xsl:template match="document" mode="glossary">
     <xsl:variable name="term" select="(.//heading)[1]"/>
-    <xsl:variable name="term-fragment" select="$term/ancestor::fragment[1]"/>
     <dt id="{@id}-default" epub:type="glossterm">
       <dfn><xsl:apply-templates select="$term/node()"/></dfn>
     </dt>
     <dd id="{@id}-def" epub:type="glossdef">
-      <xsl:apply-templates select="section/*[not(. is $term-fragment)]"/>
+      <xsl:apply-templates select=".//fragment/*[not(. is $term)]"/>
+    </dd>
+  </xsl:template>
+
+  <!-- Manual model: One term and its definition per definition fragment -->
+  <xsl:template match="fragment" mode="glossary">
+    <xsl:variable name="term" select="(heading)[1]"/>
+    <dt id="{@id}-default" epub:type="glossterm">
+      <dfn><xsl:apply-templates select="$term/node()"/></dfn>
+    </dt>
+    <dd id="{@id}-def" epub:type="glossdef">
+      <xsl:apply-templates select="*[not(. is $term)]"/>
     </dd>
   </xsl:template>
 
@@ -700,7 +732,8 @@
         <xsl:copy-of select="$text"/>
       </xsl:when>
       <xsl:otherwise>
-        <a epub:type="noteref" role="doc-glossref" class="glossref" href="#gl-{@uriid}">
+        <a epub:type="noteref" role="doc-glossref" class="glossref" href="#gl-{@uriid}{if
+               (@frag='default') then '' else concat('-', @frag)}">
           <xsl:copy-of select="$text"/>
         </a>
       </xsl:otherwise>
@@ -709,24 +742,24 @@
 
   <!-- Hidden copy of the definition of a glossary term (popup target); context = first reference -->
   <xsl:template match="xref" mode="glossary-note">
-    <xsl:variable name="uriid" select="string(@uriid)"/>
+    <xsl:variable name="ref" select="concat(@uriid,
+                                            if (@frag='default') then '' else concat('-', @frag))"/>
     <xsl:variable name="source" select="if (contains(@href, '.psml')) then document(@href, .) else root(.)"/>
-    <xsl:variable name="definition" select="($source//blockxref/document[@id = $uriid])[1]"/>
+    <xsl:variable name="definition" select="($source//(blockxref/document|fragment)[@id = $ref])[1]"/>
     <xsl:variable name="term" select="($definition//heading)[1]"/>
-    <xsl:variable name="term-fragment" select="$term/ancestor::fragment[1]"/>
-    <aside epub:type="footnote" class="glossary-note" id="gl-{$uriid}">
+    <aside epub:type="footnote" class="glossary-note" id="gl-{$ref}">
       <xsl:choose>
         <xsl:when test="$definition">
           <p class="glossary-term"><dfn><xsl:apply-templates select="$term/node()">
             <xsl:with-param name="in-note" select="true()" tunnel="yes"/>
           </xsl:apply-templates></dfn></p>
           <!-- Fragment content without the fragment wrappers (no duplicate IDs) -->
-          <xsl:apply-templates select="$definition/section/*[not(. is $term-fragment)]/node()">
+          <xsl:apply-templates select="$definition/descendant-or-self::fragment/*[not(. is $term)]/node()">
             <xsl:with-param name="in-note" select="true()" tunnel="yes"/>
           </xsl:apply-templates>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:message>[glossary] unresolved: <xsl:value-of select="@href"/> #<xsl:value-of select="$uriid"/></xsl:message>
+          <!-- <xsl:message>[glossary] unresolved: <xsl:value-of select="@href"/> #<xsl:value-of select="$ref"/></xsl:message> -->
           <p class="glossary-term"><dfn><xsl:value-of select="."/></dfn></p>
         </xsl:otherwise>
       </xsl:choose>
@@ -824,7 +857,7 @@
           <p><xsl:value-of select="$entry/property[@name = $bibliography-link][1]/@value"/></p>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:message>[bibliography] unresolved: <xsl:value-of select="@href"/> #<xsl:value-of select="$id"/></xsl:message>
+          <!-- <xsl:message>[bibliography] unresolved: <xsl:value-of select="@href"/> #<xsl:value-of select="$id"/></xsl:message> -->
           <p><xsl:value-of select="."/></p>
         </xsl:otherwise>
       </xsl:choose>
@@ -882,7 +915,7 @@
           </xsl:for-each>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:message>[footnote] unresolved: <xsl:value-of select="@href"/> #<xsl:value-of select="$fnid"/></xsl:message>
+          <!-- <xsl:message>[footnote] unresolved: <xsl:value-of select="@href"/> #<xsl:value-of select="$fnid"/></xsl:message> -->
           <p class="footnote">
             <span class="fn-marker"><xsl:value-of select="$marker"/><xsl:text> </xsl:text></span>
             <xsl:text> </xsl:text>

@@ -198,6 +198,7 @@ class ExportTaskTest {
 
   @Test
   void testExportWithGlossary() throws Exception {
+    // PSML uses single <xref-fragment type="defintinitions">
     File epub = export("export-glossary.xml");
     EpubXml xml = EpubXml.load(epub);
 
@@ -239,6 +240,59 @@ class ExportTaskTest {
     // Other entries unchanged
     Set<String> changed = Set.of("OEBPS/xhtml/definitions.xhtml", "OEBPS/xhtml/system_report-04.xhtml",
         "OEBPS/xhtml/system_report-12.xhtml", "OEBPS/nav.xhtml", "OEBPS/styles/epub.css");
+    EpubAssert.assertSameEntries(resource(BASELINE), epub, unchanged(epub, changed));
+    EpubValidator.assertValid(epub);
+  }
+
+  @Test
+  void testExportWithGlossary2() throws Exception {
+    // PSML uses multiple <fragment type="defintinitions">
+    ExportTask task = newTask(resource("process2/system_report.psml"));
+    File configFile = resource("config/export-glossary.xml");
+    assertValidConfig(configFile);
+    task.setConfig(configFile);
+    task.execute();
+    File epub = this.tmp.resolve("out.epub").toFile();
+    EpubXml xml = EpubXml.load(epub);
+
+    // Definitions as a dl in the glossary document
+    String definitions = "OEBPS/xhtml/definitions.xhtml";
+    assertEquals(1, xml.count(definitions, "//h:section[@epub:type='glossary'][@role='doc-glossary']/h:dl[@class='glossary']"));
+    assertEquals(5, xml.count(definitions, "//h:dl[@class='glossary']/h:dt[@epub:type='glossterm']/h:dfn"));
+    assertEquals(5, xml.count(definitions, "//h:dl[@class='glossary']/h:dd[@epub:type='glossdef']"));
+    assertEquals("Berlioz", xml.value(definitions, "//h:dt[@id='166979-5-default']/h:dfn"));
+    assertTrue(xml.value(definitions, "//h:dd[@id='166979-5-def']").contains("Berlioz is an open source Java library"));
+    assertEquals(0, xml.count(definitions, "//h:dd//h:h1"), "Terms should not be repeated in definitions");
+
+    // References to terms are noterefs to hidden copies of the definitions used in the same file
+    String chapter = "OEBPS/xhtml/system_report-04.xhtml";
+    assertEquals(2, glossrefs(xml, chapter));
+    assertEquals(1, glossrefs(xml, "OEBPS/xhtml/system_report-12.xhtml"));
+    assertEquals(1, glossrefs(xml, definitions));
+    assertEquals("#gl-166979-8", xml.value(chapter, "//h:a[@class='glossref'][.='SR']/@href"));
+    assertEquals("#gl-166979-5", xml.value(definitions, "//h:a[@class='glossref']/@href"));
+    assertGlossaryNotes(xml, chapter, "166979-8", "166979-7");
+    assertGlossaryNotes(xml, "OEBPS/xhtml/system_report-12.xhtml", "166979-6");
+    assertGlossaryNotes(xml, definitions, "166979-5");
+    String note = "//h:section[@class='popup-notes']/h:aside[@id='gl-166979-7']";
+    assertEquals("Non-functional", xml.value(chapter, note+"/h:p[@class='glossary-term']/h:dfn"));
+    assertTrue(xml.value(chapter, note).contains("Anything not related to the visible functionality"));
+    assertEquals(0, xml.count(chapter, note+"//h:a"), "Links in popup notes");
+    assertEquals(0, xml.count(chapter, note+"//*[@id]"), "IDs in popup notes");
+    for (String name : xml.xhtmlEntries()) {
+      if (!name.endsWith("nav.xhtml"))
+        assertEquals(0, xml.count(name, "//h:a[contains(@href, '166979-')][not(@class='glossref')]"), "Plain term link in "+name);
+    }
+    xml.assertLinksResolve();
+
+    // Other entries unchanged
+    // Landmarks
+    assertLandmark(xml, "glossary", "xhtml/definitions.xhtml#166979-1-1-1", "Definitions");
+    assertNoLandmark(xml, "bibliography");
+
+    // Other entries unchanged
+    Set<String> changed = Set.of("OEBPS/xhtml/definitions.xhtml", "OEBPS/xhtml/system_report-04.xhtml",
+            "OEBPS/xhtml/system_report-12.xhtml", "OEBPS/nav.xhtml", "OEBPS/styles/epub.css");
     EpubAssert.assertSameEntries(resource(BASELINE), epub, unchanged(epub, changed));
     EpubValidator.assertValid(epub);
   }
@@ -328,11 +382,11 @@ class ExportTaskTest {
   /**
    * Asserts that the file contains exactly one hidden popup copy of each specified definition.
    */
-  private static void assertGlossaryNotes(EpubXml xml, String name, String... uriids) {
+  private static void assertGlossaryNotes(EpubXml xml, String name, String... refids) {
     String notes = "//h:section[@class='popup-notes']/h:aside[@epub:type='footnote'][@class='glossary-note']";
-    assertEquals(uriids.length, xml.count(name, notes), "Glossary notes in "+name);
-    for (String uriid : uriids) {
-      assertEquals(1, xml.count(name, notes+"[@id='gl-"+uriid+"']"), "Missing note gl-"+uriid+" in "+name);
+    assertEquals(refids.length, xml.count(name, notes), "Glossary notes in "+name);
+    for (String refid : refids) {
+      assertEquals(1, xml.count(name, notes+"[@id='gl-"+refid+"']"), "Missing note gl-"+refid+" in "+name);
     }
   }
 
@@ -364,7 +418,6 @@ class ExportTaskTest {
       assertValidConfig(configFile);
       task.setConfig(configFile);
     }
-    if (config != null) task.setConfig(resource("config/"+config));
     task.execute();
     return this.tmp.resolve("out.epub").toFile();
   }

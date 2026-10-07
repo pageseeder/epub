@@ -192,7 +192,8 @@ public final class ImportTask extends Task {
       parameters.put("_configfileurl", this._config.toURI().toString());
 
     // Transform
-    XSLT.transform(container, new File(folder, name+".psml"), templates, parameters);
+    XSLT.transform(container, new File(folder, name+".psml"), templates,
+            parameters, new AntErrorListener(this));
 
     // 5. copy the media files
     copyMedia(preprocessed, folder);

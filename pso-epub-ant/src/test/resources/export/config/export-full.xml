@@ -30,7 +30,7 @@
   <endnotes documenttype="endnotes" />
   <footnotes documenttype="footnotes" />
 
-  <!-- The PSML xref/@documenttype for terms and xref-fragment/@type for definitions -->
+  <!-- The PSML xref/@documenttype for terms and xref-fragment/@type or fragment/@type for definitions -->
   <glossary documenttype="glossary" fragmenttype="definitions" />
 
   <!-- The PSML xref/@documenttype for citations and properties for bibliography items -->

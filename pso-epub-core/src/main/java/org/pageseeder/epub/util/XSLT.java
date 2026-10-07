@@ -16,13 +16,7 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Templates;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.*;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -102,17 +96,19 @@ public final class XSLT {
    * @param result     The Result XHTML data.
    * @param templates  The XSLT templates to use.
    * @param parameters Parameters to transmit to the transformer for use by the stylesheet (optional)
+   * @param listener   An error listener to report errors to (optional)
    *
    * @throws EPubException For XSLT Transformation errors or XSLT configuration errors
    */
-  public static void transform(File source, File result, Templates templates, Map<String, String> parameters) {
+  public static void transform(File source, File result, Templates templates,
+         Map<String, String> parameters, ErrorListener listener) {
     try (InputStream in = new FileInputStream(source);
          OutputStream out = new FileOutputStream(result)) {
       Source src = new StreamSource(new BufferedInputStream(in), source.toURI().toString());
       Result res = new StreamResult(new BufferedOutputStream(out));
 
       // Transform
-      transform(src, res, templates, parameters);
+      transform(src, res, templates, parameters, listener);
 
     } catch (IOException ex) {
       throw new EPubException("Failed to transform", ex);
@@ -128,13 +124,20 @@ public final class XSLT {
    * @param result     The Result data.
    * @param templates  The XSLT templates to use.
    * @param parameters Parameters to transmit to the transformer for use by the stylesheet (optional)
+   * @param listener   An error listener to report errors to (optional)
    *
    * @throws EPubException For XSLT Transformation errors or XSLT configuration errors
    */
-  public static void transform(Source source, Result result, Templates templates, Map<String, String> parameters) {
+  public static void transform(Source source, Result result, Templates templates,
+         Map<String, String> parameters, ErrorListener listener) {
     try {
       // Create a transformer from the templates
       Transformer transformer = templates.newTransformer();
+
+      if (listener != null) {
+        // Runtime warnings and errors
+        transformer.setErrorListener(listener);
+      }
 
       // Transmit the properties to the transformer
       if (parameters != null) {
@@ -153,28 +156,6 @@ public final class XSLT {
 
   // private helpers
   // ----------------------------------------------------------------------------------------------
-
-  /**
-   * Return the XSLT templates from the given style.
-   *
-   * @param stylepath The path to the XSLT style sheet
-   *
-   * @return the corresponding XSLT templates object
-   *
-   * @throws EPubException If the loading fails.
-   */
-  private static Templates toTemplates(File stylepath) {
-    // load the templates from the source file
-    Source source = new StreamSource(stylepath);
-    TransformerFactory factory = TransformerFactory.newInstance();
-    // TODO Ant listening
-//    factory.setErrorListener(listener);
-    try {
-      return factory.newTemplates(source);
-    } catch (TransformerConfigurationException ex) {
-      throw new EPubException("Unable to load XSLT templates", ex);
-    }
-  }
 
   /**
    * Return the XSLT templates from the given style.

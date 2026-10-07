@@ -28,6 +28,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Templates;
 
 import org.pageseeder.epub.util.Files;
@@ -97,6 +98,12 @@ public final class PSMLProcessor {
    */
   private Consumer<String> logger = message -> {};
 
+  /** Receives XSLT warnings, errors and xsl:message output (optional). */
+  private ErrorListener errorListener;
+
+  public void setErrorListener(ErrorListener errorListener) {
+    this.errorListener = errorListener;
+  }
   // Set properties
   // ----------------------------------------------------------------------------------------------
 
@@ -199,7 +206,7 @@ public final class PSMLProcessor {
         File previous = outputs.put(basename, psml);
         if (previous != null)
           throw new EPubException("Duplicate file name "+psml.getName()+" in "+previous.getParent()+" and "+psml.getParent());
-        XSLT.transform(psml, new File(xhtml, basename + ".xhtml"), toXHTML, parameters);
+        XSLT.transform(psml, new File(xhtml, basename + ".xhtml"), toXHTML, parameters, this.errorListener);
       }
 
       // 2. Media
@@ -220,11 +227,11 @@ public final class PSMLProcessor {
       opfParameters.put("image-list", listImages(mediaOut));
       opfParameters.put("xhtml-list", String.join(",", outputs.keySet()));
       XSLT.transform(this.source, new File(oebps, "content.opf"),
-          XSLT.getTemplatesFromResource(RESOURCES + "xslt/root-to-opf.xsl"), opfParameters);
+          XSLT.getTemplatesFromResource(RESOURCES + "xslt/root-to-opf.xsl"), opfParameters, this.errorListener);
       XSLT.transform(this.source, new File(oebps, "nav.xhtml"),
-          XSLT.getTemplatesFromResource(RESOURCES + "xslt/root-to-nav.xsl"), parameters);
+          XSLT.getTemplatesFromResource(RESOURCES + "xslt/root-to-nav.xsl"), parameters, this.errorListener);
       XSLT.transform(this.source, new File(oebps, "toc.ncx"),
-          XSLT.getTemplatesFromResource(RESOURCES + "xslt/root-to-ncx.xsl"), parameters);
+          XSLT.getTemplatesFromResource(RESOURCES + "xslt/root-to-ncx.xsl"), parameters, this.errorListener);
 
       // 4. Static files
       copyResource("static/mimetype", new File(this.working, "mimetype"));

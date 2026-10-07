@@ -164,6 +164,7 @@ public final class ExportTask extends Task {
     processor.setMedia(this.media);
     processor.setComponentsName(this.componentsName);
     processor.setLogger(this::log);
+    processor.setErrorListener(new AntErrorListener(this));
     try {
       processor.process();
     } catch (EPubException ex) {
