@@ -34,7 +34,7 @@ public class Param {
   /**
    * Sets the name of the parameter.
    *
-   * @param name The name of the parameter
+   * @param n The name of the parameter
    */
   public void setName(String n) {
     this.name = n;

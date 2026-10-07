@@ -23,12 +23,14 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.pageseeder.epub.EPubException;
 
-import net.sf.saxon.lib.FeatureKeys;
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
 
 
 /**
@@ -57,7 +59,7 @@ public final class XSLT {
    *
    * @return the corresponding XSLT templates object or <code>null</code> if the URL was <code>null</code>.
    *
-   * @throws BuildException If XSLT templates could not be loaded from the specified URL.
+   * @throws EPubException If XSLT templates could not be loaded from the specified URL.
    */
   public static Templates getTemplates(URL url) {
     if (url == null) return null;
@@ -81,7 +83,7 @@ public final class XSLT {
    * @return the corresponding XSLT templates object;
    *         or <code>null</code> if the resource could not be found.
    *
-   * @throws BuildException If the loading fails.
+   * @throws EPubException If the loading fails.
    */
   public static Templates getTemplatesFromResource(String resource) {
     ClassLoader loader = XSLT.class.getClassLoader();
@@ -101,7 +103,7 @@ public final class XSLT {
    * @param templates  The XSLT templates to use.
    * @param parameters Parameters to transmit to the transformer for use by the stylesheet (optional)
    *
-   * @throws BuildException For XSLT Transformation errors or XSLT configuration errors
+   * @throws EPubException For XSLT Transformation errors or XSLT configuration errors
    */
   public static void transform(File source, File result, Templates templates, Map<String, String> parameters) {
     try (InputStream in = new FileInputStream(source);
@@ -127,7 +129,7 @@ public final class XSLT {
    * @param templates  The XSLT templates to use.
    * @param parameters Parameters to transmit to the transformer for use by the stylesheet (optional)
    *
-   * @throws BuildException For XSLT Transformation errors or XSLT configuration errors
+   * @throws EPubException For XSLT Transformation errors or XSLT configuration errors
    */
   public static void transform(Source source, Result result, Templates templates, Map<String, String> parameters) {
     try {
@@ -159,7 +161,7 @@ public final class XSLT {
    *
    * @return the corresponding XSLT templates object
    *
-   * @throws BuildException If the loading fails.
+   * @throws EPubException If the loading fails.
    */
   private static Templates toTemplates(File stylepath) {
     // load the templates from the source file
@@ -181,22 +183,28 @@ public final class XSLT {
    *
    * @return the corresponding XSLT templates object or <code>null</code> if the URL was <code>null</code>.
    *
-   * @throws BuildException If XSLT templates could not be loaded from the specified URL.
+   * @throws EPubException If XSLT templates could not be loaded from the specified URL.
    */
   private static Templates toTemplates(URL url) {
     if (url == null) return null;
     // load the templates from the source URL
     Templates templates = null;
     try (InputStream in = url.openStream()){
-      Source source = new StreamSource(in);
-      source.setSystemId(url.toString());
+      XMLReader reader = XML.newParser().getXMLReader();
+      reader.setEntityResolver(new XHTMLEntityResolver());
+
+      InputSource input = new InputSource(in);
+      input.setSystemId(url.toString());
+
+      Source source = new SAXSource(reader, input);
       TransformerFactory factory = TransformerFactory.newInstance();
-      factory.setAttribute(FeatureKeys.ENTITY_RESOLVER_CLASS, "org.pageseeder.epub.util.XHTMLEntityResolver");
       templates = factory.newTemplates(source);
     } catch (TransformerConfigurationException ex) {
       throw new EPubException("Transformer exception while trying to load XSLT templates"+ url.toString(), ex);
     } catch (IOException ex) {
       throw new EPubException("IO error while trying to load XSLT templates"+ url.toString(), ex);
+    } catch (org.xml.sax.SAXException ex) {
+      throw new EPubException("SAX error while trying to load XSLT templates"+ url.toString(), ex);
     }
     return templates;
   }
