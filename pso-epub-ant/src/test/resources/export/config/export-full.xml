@@ -1,3 +1,4 @@
+<!-- All elements except the root <config> element are optional. -->
 <config>
 
   <!-- Each dc or meta element is optional and can have a @value and/or @property
@@ -38,7 +39,8 @@
                 linkproperty="link-text"
                 itemproperty="description"/>
 
-  <!-- Don't output to the ePub PSML fragment or property-fragment with these labels or types-->
+  <!-- Don't output to the EPUB any PSML fragment or property-fragment
+       with these labels or types-->
   <fragment>
     <hide label="print" />
     <hide type="epub-config" />
