@@ -49,6 +49,9 @@ using `processpublication='true` and processed using `<xrefs>` and
              working="${working}/epub" />
 ```
 
+An `export-epub/@css` attribute containing a path replaces the default CSS:
+`pso-epub-core/src/main/resources/org/pageseeder/epub/export/static/OEBPS/styles/epub.css`
+
 In this example the following jar files must be in the `lib` folder at the same level
 as the ANT script file:
 - `pso-epub-ant-[version].jar`
