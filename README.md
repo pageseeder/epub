@@ -57,7 +57,7 @@ as the ANT script file:
 - `pso-epub-ant-[version].jar`
 - `pso-epub-core-[version].jar`
 
-Also the `epub-export-config.xml` file with following content must be in the
+Also an `epub-export-config.xml` file with following content must be in the
 same folder as the ANT script file (unless `export-epub/@config` is omitted):
 
 ```xml
