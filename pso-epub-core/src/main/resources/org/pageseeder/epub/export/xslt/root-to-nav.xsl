@@ -86,10 +86,10 @@
   </xsl:template>
 
   <!-- Recursive rendering of toc-part and its children -->
-  <xsl:template match="toc-part">
+  <xsl:template match="toc-part[@title]">
     <li>
       <a href="{psf:toc-part-href(.)}">
-        <xsl:value-of select="@title"/>
+        <xsl:value-of select="concat(if (@prefix) then concat(@prefix,' ') else '',@title)"/>
       </a>
       <xsl:if test="toc-part">
         <ol>
@@ -99,12 +99,17 @@
     </li>
   </xsl:template>
 
+  <!-- Ignore toc-part without title -->
+  <xsl:template match="toc-part[not(@title)]">
+    <xsl:apply-templates select="toc-part"/>
+  </xsl:template>
+
   <!-- Translate toc-part @href and @idref into an XHTML href.
        Output: "xhtml/filename.xhtml#[idref]" -->
   <xsl:function name="psf:toc-part-href">
     <xsl:param name="toc-part"/>
     <xsl:variable name="href"
-                  select="if ($toc-part/@href) then $toc-part/@href else $toc-part/ancestor::toc-part[1]/@href" />
+                  select="if ($toc-part/@href) then $toc-part/@href else $toc-part/ancestor::toc-part[@href][1]/@href" />
     <xsl:variable name="filename"
                   select="replace(tokenize($href, '/')[last()], '\.psml$', '.xhtml')"/>
     <xsl:value-of select="concat('xhtml/', $filename, '#', $toc-part/@idref)"/>

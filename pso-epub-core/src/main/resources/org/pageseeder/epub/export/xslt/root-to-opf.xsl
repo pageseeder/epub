@@ -7,7 +7,7 @@
   ~ Metadata driven by config/metadata in the export configuration.
   ~ Spine driven by <toc-tree>/<toc-part>, followed by other XHTML files as non-linear.
 -->
-<xsl:stylesheet version="2.0"
+<xsl:stylesheet version="3.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:opf="http://www.idpf.org/2007/opf"
                 xmlns:dc="http://purl.org/dc/elements/1.1/"
@@ -61,12 +61,14 @@
       </xsl:for-each>
     </xsl:variable>
     <xsl:variable name="unique-files" select="distinct-values($toc-files)"/>
-    <xsl:variable name="unique-images" select="tokenize($image-list, ',')[normalize-space(.)]"/>
+    <xsl:variable name="unique-images"
+                  select="tokenize($image-list, ',')[normalize-space(.)] ! encode-for-uri(.)"/>
 
     <!-- Generated XHTML files not in the TOC (non-linear) -->
     <xsl:variable name="toc-basenames" select="for $f in $unique-files return replace($f, '\.psml$', '')"/>
-    <xsl:variable name="other-files"
-                  select="tokenize($xhtml-list, ',')[normalize-space(.)][not(. = $toc-basenames)]"/>
+    <xsl:variable name="other-files" as="xs:string*"
+                  select="(tokenize($xhtml-list, ',')[normalize-space(.)] ! encode-for-uri(.))
+                      [not(. = $toc-basenames)]"/>
 
     <!-- Title fallback chain (config title wins) -->
     <xsl:variable name="pub-title"
@@ -81,7 +83,7 @@
                                  '/', $basename, '.xhtml'))" />
         <xsl:variable name="psdate" select="$xhtml-file//xhtml:meta[@name='pageseeder-date']/@content" />
         <item xmlns="http://www.idpf.org/2007/opf"
-              id="xhtml-{$basename}" href="xhtml/{$basename}.xhtml" media-type="application/xhtml+xml">
+              id="xhtml-{replace($basename, '[^a-zA-Z0-9_-]', '-')}" href="xhtml/{$basename}.xhtml" media-type="application/xhtml+xml">
           <xsl:if test="$xhtml-file//m:math">
             <xsl:attribute name="properties">mathml</xsl:attribute>
           </xsl:if>
@@ -229,11 +231,11 @@
         <itemref idref="nav" linear="no"/>
 
         <xsl:for-each select="$toc-basenames">
-          <itemref idref="xhtml-{.}" linear="yes"/>
+          <itemref idref="xhtml-{replace(., '[^a-zA-Z0-9_-]', '-')}" linear="yes"/>
         </xsl:for-each>
 
         <xsl:for-each select="$other-files">
-          <itemref idref="xhtml-{.}" linear="no"/>
+          <itemref idref="xhtml-{replace(., '[^a-zA-Z0-9_-]', '-')}" linear="no"/>
         </xsl:for-each>
 
       </spine>

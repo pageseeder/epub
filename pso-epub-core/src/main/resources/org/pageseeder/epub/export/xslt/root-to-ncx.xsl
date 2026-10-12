@@ -61,17 +61,24 @@
     </ncx>
   </xsl:template>
 
-  <xsl:template match="toc-part">
+  <xsl:template match="toc-part[@title]">
     <!-- playOrder is the position of this toc-part in a flat document-order list. -->
     <xsl:variable name="play-order"
-                  select="count(preceding::toc-part) + count(ancestor::toc-part) + 2"/>
+                  select="count(preceding::toc-part[@title]) + count(ancestor::toc-part[@title]) + 2"/>
     <navPoint id="navPoint-{$play-order}" playOrder="{$play-order}">
       <navLabel>
-        <text><xsl:value-of select="@title"/></text>
+        <text>
+          <xsl:value-of select="concat(if (@prefix) then concat(@prefix,' ') else '',@title)"/>
+        </text>
       </navLabel>
       <content src="{psf:toc-part-href(.)}" />
       <xsl:apply-templates select="toc-part" />
     </navPoint>
+  </xsl:template>
+
+  <!-- Ignore toc-part without title -->
+  <xsl:template match="toc-part[not(@title)]">
+    <xsl:apply-templates select="toc-part"/>
   </xsl:template>
 
   <!-- Translate toc-part @href and @idref into an XHTML href.
@@ -79,7 +86,7 @@
   <xsl:function name="psf:toc-part-href">
     <xsl:param name="toc-part"/>
     <xsl:variable name="href"
-                  select="if ($toc-part/@href) then $toc-part/@href else $toc-part/ancestor::toc-part[1]/@href" />
+                  select="if ($toc-part/@href) then $toc-part/@href else $toc-part/ancestor::toc-part[@href][1]/@href" />
     <xsl:variable name="filename"
                   select="replace(tokenize($href, '/')[last()], '\.psml$', '.xhtml')"/>
     <xsl:value-of select="concat('xhtml/', $filename, '#', $toc-part/@idref)"/>

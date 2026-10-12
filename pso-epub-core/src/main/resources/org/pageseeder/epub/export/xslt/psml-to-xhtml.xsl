@@ -441,7 +441,7 @@
     <img>
       <xsl:attribute name="src">
         <xsl:text>../media/</xsl:text>
-        <xsl:value-of select="tokenize(@src, '/')[last()]"/>
+        <xsl:value-of select="encode-for-uri(tokenize(@src, '/')[last()])"/>
       </xsl:attribute>
       <xsl:attribute name="alt">
         <xsl:value-of select="(@alt, ancestor::image/@alt, '')[1]"/>

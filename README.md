@@ -16,9 +16,12 @@ It does also require an XSLT2 processor (For example Saxon)
 Usage
 -----
 
-The export task requires PSML from a PageSeeder publication that has been exported
-using `processpublication='true` and processed using `<xrefs>` and
-`<images src="filename" location="${images}"/>` for example:
+The export task requires PSML from a PageSeeder publication:
+- where all content referenced in the TOC is in a `components` folder 
+  at the same level as the root document.
+- is exported using `processpublication='true`
+- is processed using `<xrefs>` and `<images src="filename" location="${images}"/>`
+For example:
 
 ```xml
 <ps:export src="${ps.config.default.uri.path}"
