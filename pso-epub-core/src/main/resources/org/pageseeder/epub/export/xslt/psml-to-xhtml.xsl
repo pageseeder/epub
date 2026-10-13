@@ -44,7 +44,9 @@
         <xsl:if test="@publicationid">
           <meta name="pageseeder-publicationid" content="{@publicationid}"/>
         </xsl:if>
-        <meta name="pageseeder-date" content="{@date}" />
+        <xsl:if test="@date">
+          <meta name="pageseeder-date" content="{@date}" />
+        </xsl:if>
       </head>
       <body>
         <xsl:attribute name="epub:type">bodymatter</xsl:attribute>

@@ -93,7 +93,7 @@ same folder as the ANT script file (unless `export-epub/@config` is omitted):
     <meta name="a11y:certifierReport" property="epub-config-certifier-report" />
   </metadata>
 
-  <!-- The PSML xref/@documenttype for endnotes and footnotes -->
+  <!-- The PSML xref/@documenttype for endnotes and footnotes (requires processed xref/@type=alternate) -->
   <endnotes documenttype="endnotes" />
   <footnotes documenttype="footnotes" />
 
