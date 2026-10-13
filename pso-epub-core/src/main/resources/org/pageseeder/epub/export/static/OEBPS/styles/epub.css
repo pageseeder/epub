@@ -45,6 +45,30 @@ p + p {
   margin-top: 0;
 }
 
+/* ----- Indented paragraphs (p.indent-1 … p.indent-6) ----- */
+
+/* Indented para: level N starts at N * 2.5em */
+p.indent-1 { padding-left: 2.5em; }
+p.indent-2 { padding-left: 5em; }
+p.indent-3 { padding-left: 7.5em; }
+p.indent-4 { padding-left: 10em; }
+p.indent-5 { padding-left: 12.5em; }
+p.indent-6 { padding-left: 15em; }
+
+/* With prefix: hanging indent */
+p.hanging {
+  text-indent: -2.5em;
+}
+
+p.hanging > span.para-prefix {
+  display: inline-block;
+  box-sizing: border-box;
+  min-width: 2.5em;       /* label column; grows if the label is wider */
+  padding-right: 0.5em;   /* guaranteed gap between label and text */
+  white-space: nowrap;    /* never wrap inside the label */
+  text-indent: 0;         /* text-indent is inherited, so reset it inside the label */
+}
+
 /* ----- Lists ----- */
 ul, ol {
   margin: 0.5em 0 0.8em;

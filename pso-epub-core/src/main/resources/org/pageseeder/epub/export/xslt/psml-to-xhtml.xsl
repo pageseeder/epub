@@ -259,11 +259,12 @@
        ===================================================================== -->
   <xsl:template match="para">
     <p>
-      <xsl:if test="@indent">
-        <xsl:attribute name="class">
-          <xsl:text>indent-</xsl:text>
-          <xsl:value-of select="@indent"/>
-        </xsl:attribute>
+      <xsl:if test="@indent or @prefix">
+        <xsl:attribute name="class"
+                       select="string-join((
+                               if (@indent) then concat('indent-', @indent) else (),
+                               if (@indent and @prefix) then 'hanging' else ()
+                             ), ' ')"/>
       </xsl:if>
       <xsl:if test="@prefix">
         <span class="para-prefix">
