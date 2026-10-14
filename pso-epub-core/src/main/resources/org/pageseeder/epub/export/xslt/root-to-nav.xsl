@@ -13,6 +13,9 @@
 
   <xsl:include href="config.xsl"/>
 
+  <xsl:param name="glossary-filename" />
+  <xsl:param name="bibliography-filename" />
+
   <xsl:output method="xml"
               encoding="UTF-8"
               indent="yes"
@@ -55,16 +58,16 @@
             </li>
             <!-- Glossary and bibliography (only when configured): the first component in the
                  TOC whose document type is the configured one -->
-            <xsl:if test="exists($glossary-type)">
+            <xsl:if test="exists($glossary-filename)">
               <xsl:call-template name="landmark">
                 <xsl:with-param name="type" select="'glossary'"/>
-                <xsl:with-param name="documenttype" select="$glossary-type"/>
+                <xsl:with-param name="filename" select="$glossary-filename"/>
               </xsl:call-template>
             </xsl:if>
-            <xsl:if test="exists($bibliography-type)">
+            <xsl:if test="exists($bibliography-filename)">
               <xsl:call-template name="landmark">
                 <xsl:with-param name="type" select="'bibliography'"/>
-                <xsl:with-param name="documenttype" select="$bibliography-type"/>
+                <xsl:with-param name="filename" select="$bibliography-filename"/>
               </xsl:call-template>
             </xsl:if>
           </ol>
@@ -73,11 +76,11 @@
     </html>
   </xsl:template>
 
-  <!-- Landmark to the first component in the TOC of the specified document type (if any) -->
+  <!-- Landmark to the first component in the TOC of the specified filename (if any) -->
   <xsl:template name="landmark">
     <xsl:param name="type"/>
-    <xsl:param name="documenttype"/>
-    <xsl:variable name="part" select="(//toc-tree//toc-part[@href][document(@href, .)/document/@type = $documenttype])[1]"/>
+    <xsl:param name="filename"/>
+    <xsl:variable name="part" select="(//toc-tree//toc-part[tokenize(@href,'/')[last()]=$filename])[1]"/>
     <xsl:if test="$part">
       <li>
         <a epub:type="{$type}" href="{psf:toc-part-href($part)}"><xsl:value-of select="$part/@title"/></a>
@@ -91,7 +94,7 @@
       <a href="{psf:toc-part-href(.)}">
         <xsl:value-of select="concat(if (@prefix) then concat(@prefix,' ') else '',@title)"/>
       </a>
-      <xsl:if test="toc-part">
+      <xsl:if test=".//toc-part[@title]">
         <ol>
           <xsl:apply-templates select="toc-part"/>
         </ol>

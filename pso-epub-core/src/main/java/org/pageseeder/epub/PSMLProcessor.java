@@ -9,14 +9,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -190,7 +183,11 @@ public final class PSMLProcessor {
     try {
       // Configuration
       String configURL = configURL();
-      Set<String> noteTypes = noteDocumentTypes(this.config);
+      Map<String, String> configDocumentTypes = configDocumentTypes(this.config);
+      Set<String> noteTypes = Stream.of("footnotes", "endnotes")
+              .map(configDocumentTypes::get)
+              .filter(Objects::nonNull)
+              .collect(Collectors.toSet());
       Map<String, String> parameters = new HashMap<>();
       parameters.put("config-url", configURL);
 
@@ -201,7 +198,8 @@ public final class PSMLProcessor {
       this.logger.accept("Transforming PSML to XHTML");
       Templates toXHTML = XSLT.getTemplatesFromResource(RESOURCES + "xslt/psml-to-xhtml.xsl");
       Map<String, File> outputs = new TreeMap<>();
-      for (File psml : listInputs(processDir, componentsDir, noteTypes)) {
+      Map<File, String> fileDocumentTypes = listInputs(processDir, componentsDir, noteTypes);
+      for (File psml : fileDocumentTypes.keySet()) {
         String basename = psml.getName().substring(0, psml.getName().length() - ".psml".length());
         File previous = outputs.put(basename, psml);
         if (previous != null)
@@ -228,8 +226,28 @@ public final class PSMLProcessor {
       opfParameters.put("xhtml-list", String.join(",", outputs.keySet()));
       XSLT.transform(this.source, new File(oebps, "content.opf"),
           XSLT.getTemplatesFromResource(RESOURCES + "xslt/root-to-opf.xsl"), opfParameters, this.errorListener);
+
+      Map<String, String> navParameters = new HashMap<>(parameters);
+      String glossaryType = configDocumentTypes.get("glossary");
+      String bibType = configDocumentTypes.get("bibliography");
+      if (glossaryType != null || bibType != null) {
+        for (Map.Entry<File, String> entry : fileDocumentTypes.entrySet()) {
+          if (entry.getValue().equals(glossaryType)) {
+            navParameters.put("glossary-filename", entry.getKey().getName());
+            glossaryType = null; // get first file only
+          }
+          if (entry.getValue().equals(bibType)) {
+            navParameters.put("bibliography-filename", entry.getKey().getName());
+            bibType = null; // get first file only
+          }
+          if (bibType == null && glossaryType == null) {
+            break;
+          }
+        }
+      }
       XSLT.transform(this.source, new File(oebps, "nav.xhtml"),
-          XSLT.getTemplatesFromResource(RESOURCES + "xslt/root-to-nav.xsl"), parameters, this.errorListener);
+          XSLT.getTemplatesFromResource(RESOURCES + "xslt/root-to-nav.xsl"), navParameters, this.errorListener);
+
       XSLT.transform(this.source, new File(oebps, "toc.ncx"),
           XSLT.getTemplatesFromResource(RESOURCES + "xslt/root-to-ncx.xsl"), parameters, this.errorListener);
 
@@ -268,47 +286,56 @@ public final class PSMLProcessor {
   }
 
   /**
-   * @return the document types of the footnotes and endnotes specified in the configuration.
+   * @return a map of element,document type of the footnotes, endnotes,
+   * glossary and bibliography specified in the configuration.
    */
-  private static Set<String> noteDocumentTypes(File config) {
-    Set<String> types = new HashSet<>();
-    if (config == null) return types;
+  private static Map<String, String> configDocumentTypes(File config) {
+    Map<String, String> typesMap = new HashMap<>();
+    if (config == null) return typesMap;
     try {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
       Element root = factory.newDocumentBuilder().parse(config).getDocumentElement();
-      for (String name : List.of("footnotes", "endnotes")) {
+
+      // Expanded list to include glossary and bibliography
+      for (String name : List.of("footnotes", "endnotes", "glossary", "bibliography")) {
         NodeList nodes = root.getElementsByTagName(name);
         for (int i = 0; i < nodes.getLength(); i++) {
           String type = ((Element) nodes.item(i)).getAttribute("documenttype");
-          if (!type.isEmpty()) types.add(type);
+          if (!type.isEmpty()) {
+            typesMap.put(name, type);
+          }
         }
       }
     } catch (ParserConfigurationException | SAXException | IOException ex) {
-      throw new EPubException("Unable to read configuration "+config, ex);
+      throw new EPubException("Unable to read configuration " + config, ex);
     }
-    return types;
+    return typesMap;
   }
 
   /**
    * Lists the PSML files to transform: those directly in the process folder and all those in the
    * components folder, except the footnotes and endnotes documents (configured document types) which
    * are inlined in the documents citing them.
+   *
+   * @return a map of each PSML file to its document type (empty string if none), in no particular order.
    */
-  private static List<File> listInputs(File processDir, File componentsDir, Set<String> noteTypes) throws IOException {
-    List<File> inputs = new ArrayList<>();
+  private static Map<File, String> listInputs(File processDir, File componentsDir, Set<String> noteTypes) throws IOException {
+    Map<File, String> inputs = new HashMap<>();
     File[] roots = processDir.listFiles(f -> f.isFile() && f.getName().endsWith(".psml"));
     if (roots != null) {
-      java.util.Arrays.sort(roots);
-      inputs.addAll(List.of(roots));
+      for (File root : roots) {
+        inputs.put(root, documentType(root));
+      }
     }
     if (componentsDir.isDirectory()) {
       try (Stream<Path> paths = java.nio.file.Files.walk(componentsDir.toPath())) {
-        inputs.addAll(paths.filter(p -> p.toString().endsWith(".psml") && java.nio.file.Files.isRegularFile(p))
-            .sorted()
-            .map(Path::toFile)
-            .filter(f -> noteTypes.isEmpty() || !noteTypes.contains(documentType(f)))
-            .collect(Collectors.toList()));
+        paths.filter(p -> p.toString().endsWith(".psml") && java.nio.file.Files.isRegularFile(p))
+                .map(Path::toFile)
+                .forEach(f -> {
+                  String type = documentType(f);
+                  if (!noteTypes.contains(type)) inputs.put(f, type);
+                });
       }
     }
     return inputs;
