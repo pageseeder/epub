@@ -11,7 +11,7 @@ Dependencies
 ------------
 
 The ANT task should only depend on ANT 1.10.
-It does also require an XSLT2 processor (For example Saxon)
+It does also require an XSLT3 processor (For example Saxon)
 
 Usage
 -----
