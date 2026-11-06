@@ -17,11 +17,11 @@ Usage
 -----
 
 The export task requires PSML from a PageSeeder publication:
-- where all content referenced in the TOC is in a `components` folder 
+- where all content referenced in the TOC is in a `components` folder
   at the same level as the root document.
-- is exported using `processpublication='true`
+- is exported using `processpublication="true"`
 - is processed using `<xrefs>` and `<images src="filename" location="${images}"/>`
-For example:
+  For example:
 
 ```xml
 <ps:export src="${ps.config.default.uri.path}"
@@ -69,8 +69,8 @@ same folder as the ANT script file (unless `export-epub/@config` is omitted):
 <!-- All elements except the root <config> element are optional. -->
 <config>
 
-  <!-- Each dc or meta element is optional and can have a @value and/or @property
-       with @property overriding @value with the value from the PSML property/@value of that name.
+  <!-- Each dc or meta element is optional and can have a @value and/or @property with @property
+       overriding @value with the value from the PSML property/@value of that name from the root.
        If @multiple='true' then values are taken from the PSML property/value.
        The dc/@name only supports the names listed but meta/@name can be anything. -->
   <metadata>
